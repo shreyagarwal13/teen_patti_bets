@@ -12,6 +12,9 @@ To use this, go to the terminal and type<br />
             `python3 bet_manager.py`<br />
 
 Input y/n for yes and no to start or end each round. 
+
 Entering -1 in the middle of a round will end the round. 
+
 Enter the player no. who won after each round to add the pot to their balance.
+
 You can more players at the end of each round.
