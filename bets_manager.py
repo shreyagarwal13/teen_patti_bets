@@ -1,6 +1,7 @@
 # This script is used to track the bets in each round of a teen patti game
 import json
 import os.path
+from prettytable import PrettyTable
 
 players = {}
 
@@ -28,18 +29,22 @@ def check_yes_no(yes_no_ip):
         return False
 
 
-def save_winnings():
+def save_data():
     with open(winning_history_path, "w", encoding="utf-8") as json_file:
         json.dump(players, json_file)
-        print("\nPlayer balances saved!\n")
+        print("\nPlayer Data saved!\n")
 
 
 def input_players():
-    num = check_return_int_conversion(input("Enter number of players "))
+    num = 0
+    while num < 2:
+        num = check_return_int_conversion(input("Enter number of players "))
+        if num < 2:
+            print("No no, do it again, this time atleast 2 players.")
     for i in range(num):
         player_name = input("\nEnter name of Player number " + str(i + 1) + " ")
         player_balance = check_return_int_conversion(
-            input("Enter balance of " + player_name + " ")
+            input("Enter balance of " + player_name.title() + " ")
         )
         players[i + 1] = {"id": i + 1, "balance": player_balance, "name": player_name}
     print_player_balances()
@@ -49,34 +54,60 @@ def get_new_player_number():
     return list(players)[-1] + 1
 
 
-def add_new_player():
-    add_new_player_check = input("\nDo you want to add new player? (y/n)  ")
-    while check_yes_no(add_new_player_check):
+def add_remove_player():
+    add_remove_player_check = check_return_int_conversion(
+        input(
+            "\nDo you want to add(1)/remove(2) player?\nEnter any other number to not take any action: "
+        )
+    )
+    while add_remove_player_check == 1:
         player_number = get_new_player_number()
         player_name = input("\nEnter name of Player number " + str(player_number) + " ")
         player_balance = check_return_int_conversion(
-            input("Enter balance of " + player_name + " ")
+            input("Enter balance of " + player_name.title() + " ")
         )
         players[player_number] = {
             "id": player_number,
             "balance": player_balance,
             "name": player_name,
         }
-        add_new_player_check = input("\nDo you want to add another player? (y/n)  ")
+        add_remove_player_check = check_return_int_conversion(
+            input(
+                "\nDo you want to add another player? \nEnter 1 for yes, 2 for player deletion, any other number for quitting "
+            )
+        )
+
+    while add_remove_player_check == 2:
+        if len(list(players)) == 0:
+            print("Noooo I won't let you do this. Haha!")
+        print_players()
+        player_number = check_return_int_conversion(
+            input("Enter the player number you want to remove: ")
+        )
+        if not players.get(player_number):
+            print("Do you think I am Dumb?? I am not but you definitely are!!")
+        else:
+            players.pop(player_number)
+        add_remove_player_check = check_return_int_conversion(
+            input(
+                "\nDo you want to remove another player (Enter 2 for yes, any other number for quitting) "
+            )
+        )
+    save_data()
 
 
 def print_player_balances():
-    print("\nBalances of each player are")
-    print("\n No. \tName  \t Balance")
+    table = PrettyTable(["No.", "Name", "Balance"], title="Player Balances")
     for k, v in players.items():
-        print(" " + str(k) + "\t" + v.get("name") + "\t Rs. " + str(v.get("balance")))
+        table.add_row([k, v.get("name").title(), "Rs. " + str(v.get("balance"))])
+    print(table)
 
 
 def print_players():
-    print("\nThe players are")
-    print("\n No. \tName")
+    table = PrettyTable(["No.", "Name"], title="Players")
     for k, v in players.items():
-        print(" " + str(k) + "\t" + v.get("name"))
+        table.add_row([k, v.get("name").title()])
+    print(table)
 
 
 def generate_round():
@@ -102,13 +133,11 @@ def generate_round():
     player_id = starting_player_id
     round_history = {k: 0 for k in players.keys()}
     while player_bet != -1:
-        player_name = players.get(player_id).get("name")
+        player_name = players.get(player_id).get("name").title()
         if folded_players.get(player_id):
             player_id = player_id % num_of_players + 1
             continue
-        player_bet = check_return_int_conversion(
-            input(player_name.title() + " Bets Rs. ")
-        )
+        player_bet = check_return_int_conversion(input(player_name + " Bets Rs. "))
         if player_bet == -1:
             break
         elif player_bet == 0:
@@ -135,15 +164,15 @@ def generate_round():
     winning_player_name = players.get(winning_player_id).get("name")
     print(
         "\n Congratulations! "
-        + winning_player_name
+        + winning_player_name.title()
         + " won the pot of Rs. "
         + str(winning_amount)
     )
     players[winning_player_id]["balance"] += winning_amount
     round_history[winning_player_id] += winning_amount
     print_player_balances()
-    save_winnings()
-    add_new_player()
+    save_data()
+    add_remove_player()
 
 
 if check_yes_no(load_game):
@@ -153,7 +182,7 @@ if check_yes_no(load_game):
             players = json.load(json_file)
             players = {int(k): v for k, v in players.items()}
             print_player_balances()
-            add_new_player()
+            add_remove_player()
         except:
             print("\n Sorry, no data found. Starting new game... \n")
             input_players()
