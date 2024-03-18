@@ -1,4 +1,4 @@
-# Bets Manager ( Teen patti / Poker)
+# Chipless ( Teen patti / Poker)
 
 I just wrote a small script to maintain the bets and balances for each player while in gambling games like Teen Patti or Poker so that you can play even without any chips/ cash.
 
